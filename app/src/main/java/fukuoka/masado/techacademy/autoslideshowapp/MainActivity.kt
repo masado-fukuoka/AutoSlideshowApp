@@ -172,18 +172,13 @@ class MainActivity : AppCompatActivity() {
 
 
             } else {
-                if (mTimer != null)
-                    mTimer!!.cancel()
+                mTimer!!.cancel()
                 saisei_button.text = "再生"
                 susumu_button.isEnabled = true
                 modoru_button.isEnabled = true
-
-
-
-
+                mTimer = null
 
             }
-
 
         }
     }

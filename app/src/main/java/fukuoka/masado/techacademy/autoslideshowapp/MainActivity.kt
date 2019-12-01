@@ -17,9 +17,12 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
 
+    private var mTimer: Timer? = null
 
+    // タイマー用の時間のための変数
+    private var mTimerSec = 0.0
 
-
+    private var mHandler = Handler()
 
 
     private val PERMISSIONS_REQUEST_CODE = 100
@@ -61,9 +64,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-
-
     private fun getContentsInfo() {
         // 画像の情報を取得する
         val resolver = contentResolver
@@ -87,8 +87,14 @@ class MainActivity : AppCompatActivity() {
 
                 Log.d("ANDROID", "URI : " + imageUri.toString())
                 imageView.setImageURI(imageUri)
-            } else if (cursor!!.moveToNext() === false) {
+            } else {
                 cursor!!.moveToFirst()
+                val fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID)
+                val id = cursor.getLong(fieldIndex)
+                val imageUri =
+                    ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
+
+                imageView.setImageURI(imageUri)
             }
         }
 
@@ -108,46 +114,72 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        class MainActivity : AppCompatActivity() {
 
-            private var mTimer: Timer? = null
 
-            // タイマー用の時間のための変数
-            private var mTimerSec = 0.0
 
-            private var mHandler = Handler()
 
-            override fun onCreate(savedInstanceState: Bundle?) {
-                super.onCreate(savedInstanceState)
-                setContentView(R.layout.activity_main)
+        saisei_button.setOnClickListener {
 
-                saisei_button.setOnClickListener {
-                    if (mTimer == null) {
-                        mTimer = Timer()
-                        mTimer!!.schedule(object : TimerTask() {
-                            override fun run() {
-                                mTimerSec += 0.1
-                                mHandler.post {
-                                    if (cursor!!.moveToNext()) {
-                                        // indexからIDを取得し、そのIDから画像のURIを取得する
-                                        val fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID)
-                                        val id = cursor.getLong(fieldIndex)
-                                        val imageUri =
-                                            ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
 
-                                        Log.d("ANDROID", "URI : " + imageUri.toString())
-                                        imageView.setImageURI(imageUri)
-                                    }
-                                    }
-                                }
+            if (mTimer == null) {
+                mTimer = Timer()
+                mTimer!!.schedule(object : TimerTask() {
+                    override fun run() {
+                        mHandler.post {
+                            if (cursor!!.moveToNext()) {
+                                // indexからIDを取得し、そのIDから画像のURIを取得する
+                                val fieldIndex =
+                                    cursor.getColumnIndex(MediaStore.Images.Media._ID)
+                                val id = cursor.getLong(fieldIndex)
+                                val imageUri =
+                                    ContentUris.withAppendedId(
+                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                        id
+                                    )
 
-                        }, 200, 200) // 最初に始動させるまで 200ミリ秒、ループの間隔を 200ミリ秒 に設定
+                                Log.d("ANDROID", "URI : " + imageUri.toString())
+                                imageView.setImageURI(imageUri)
+
+                                susumu_button.isEnabled = false
+                                modoru_button.isEnabled = false
+                                saisei_button.text = "停止"
+
+
+                            }
+
+
+                            /*
+                            val fieldIndex =
+                                cursor.getColumnIndex(MediaStore.Images.Media._ID)
+                            val id = cursor.getLong(fieldIndex)
+                            val imageUri =
+                                ContentUris.withAppendedId(
+                                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                    id
+                                )
+
+                            imageView.setImageURI(imageUri)
+                                 */
+
+
+                        }
+
                     }
 
-                    saisei_button.text = "停止"
+
+                }, 2000, 2000) // 最初に始動させるまで 200ミリ秒、ループの間隔を 200ミリ秒 に設定
 
 
-                }
+
+            } else {
+                if (mTimer != null)
+                    mTimer!!.cancel()
+                saisei_button.text = "再生"
+                susumu_button.isEnabled = true
+                modoru_button.isEnabled = true
+
+
+
 
 
             }
